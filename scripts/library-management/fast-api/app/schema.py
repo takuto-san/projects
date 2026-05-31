@@ -11,13 +11,33 @@ from typing import List, Optional
 #     id: int
 #     name: str
 
-# 本（在庫）
+# 本
 class BookResponse(BaseModel):
     id: int
     isbn: Optional[str]
     title: str
-    total_copies: int
-    available_copies: int
+
+    class Config:
+            from_attributes = True
+# 在庫
+class ItemResponse(BaseModel):
+    id: int
+    book_id: int
+    book: BookResponse
+
+    class Config:
+        from_attributes = True
+
+# 貸出
+class BorrowingRequest(BaseModel):
+    item_ids: List[str]
+
+class BorrowingResponse(BaseModel):
+    id: int
+    user_id: int
+    borrow_date: datetime
+    return_date: Optional[datetime]
+    item: ItemResponse
 
 # class BookUpdateRequest(BaseModel):
 #     total_copies: int
@@ -29,14 +49,3 @@ class BookResponse(BaseModel):
 #     title: str
 #     total_copies: int
 #     available_copies: int
-
-# 貸出
-class BorrowingRequest(BaseModel):
-    book_ids: List[str]
-
-class BorrowingResponse(BaseModel):
-    id: int
-    user_id: int
-    borrow_date: datetime
-    return_date: Optional[datetime]
-    book: BookResponse

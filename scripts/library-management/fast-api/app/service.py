@@ -1,61 +1,56 @@
 from datetime import datetime
-from contextlib import asynccontextmanager
-from fastapi import FastAPI
-from pydantic import BaseModel
-from typing import List, Optional
-from models import Base, User, Book, Borrowing
-from schema import BookResponse, BorrowingRequest, BorrowingResponse
-from cruds import get_user_by_id, get_book_by_id, get_borrowing_by_id, get_borrowings_by_user
-from db import SQLALCHEMY_DATABASE_URL, engine, SessionLocal, get_db
+from typing import List
 from sqlalchemy.orm import Session
-from fastapi import HTTPException, Depends
+from fastapi import HTTPException
+from models import Borrowing
+from cruds import get_user_by_email, get_item_by_id, get_borrowing_by_id
 
 # service（ロジック）
 
 # 貸出処理
-def borrow_books(db: Session, user_id: int, book_ids: List[int]):
-    user = get_user_by_id(db, user_id)
+def borrow_books(db: Session, email: str, item_ids: List[int]):
+    user = get_user_by_email(db, email)
     if not user:
-        raise HTTPException(status_code=404, detail="User not found")
+        raise HTTPException(status_code=404, detail="ユーザーが見つかりません")
 
-    created_borrowings = []
+    borrowings = []
     
-    for book_id in book_ids:
-        book = get_book_by_id(db, book_id)
-        if not book:
-            raise HTTPException(status_code=404, detail=f"Book ID:{book_id} not found")
+    for item_id in item_ids:
+        item = get_item_by_id(db, item_id)
+        if not item:
+            raise HTTPException(status_code=404, detail=f"在庫ID:{item_id} が見つかりません")
         
-        if book.available_copies <= 0:
-            raise HTTPException(status_code=400, detail=f"『{book.title}』is not available for borrowing")
+        if item.available_copies <= 0:
+            raise HTTPException(status_code=400, detail=f"『{item.book.title}』は現在貸出中です")
 
-        book.available_copies -= 1
+        item.available_copies -= 1
 
-        new_borrowing = Borrowing(user_id=user_id, book_id=book_id)
+        new_borrowing = Borrowing(user_id=user.id, item_id=item_id)
         
         db.add(new_borrowing)
-        created_borrowings.append(new_borrowing)
+        borrowings.append(new_borrowing)
 
     db.commit()
 
-    for borrowing in created_borrowings:
+    for borrowing in borrowings:
         db.refresh(borrowing)
 
-    return created_borrowings
+    return borrowings
 
 
 # 返却処理
-def return_books(db: Session, borrowing_id: int):
+def return_book(db: Session, borrowing_id: int):
     borrowing = get_borrowing_by_id(db, borrowing_id)
     if not borrowing:
-        raise HTTPException(status_code=404, detail="Borrowing record not found")
+        raise HTTPException(status_code=404, detail="貸出記録が見つかりません")
     
     if borrowing.return_date is not None:
-        raise HTTPException(status_code=400, detail="This book has already been returned")
+        raise HTTPException(status_code=400, detail="この本はすでに返却されています")
 
     borrowing.return_date = datetime.now()
 
-    if borrowing.book:
-        borrowing.book.available_copies += 1
+    if borrowing.item:
+        borrowing.item.available_copies += 1
 
     db.commit()
     db.refresh(borrowing)

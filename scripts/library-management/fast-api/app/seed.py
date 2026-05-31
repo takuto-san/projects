@@ -8,7 +8,6 @@ def seed_data(db: Session):
             id=1, 
             email="test@example.com", 
             name="テストユーザー",
-            hashed_password="dummy_hash"
         )
         db.add(test_user)
 
@@ -54,7 +53,7 @@ def seed_data(db: Session):
             id=2, 
             book_id=2, 
             total_copies=3, 
-            available_copies=0
+            available_copies=3
         )
         
         db.add(item1)

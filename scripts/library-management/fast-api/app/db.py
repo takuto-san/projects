@@ -10,10 +10,8 @@ engine = create_engine(
 )
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-# モデルクラス（UserやBook）が継承するためのBase
 Base = declarative_base()
 
-# FastAPIのエンドポイントでデータベースを利用するための共通関数
 def get_db():
     db = SessionLocal()
     try: 
