@@ -4,7 +4,7 @@ export const registerBooks = async (userId: string, books: string[]) => {
     const response = await fetch(endpoint, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ bookIds: books })
+    body: JSON.stringify({ book_ids: books })
   });
 
   if (!response.ok) {

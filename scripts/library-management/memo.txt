@@ -1,3 +1,6 @@
 npm create vite@latest react -- --template react-ts
 cd react
 npm run dev
+
+cd fastapi-mvc
+docker start 2f5065c0ea7b
