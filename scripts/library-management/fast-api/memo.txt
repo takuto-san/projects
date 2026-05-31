@@ -1,0 +1,5 @@
+docker build -t fastapi-mvc-app .
+docker run -d -p 8080:8080 --name fastapi-mvc fastapi-mvc-app
+docker stop fastapi-mvc
+
+docker rm fastapi-mvc

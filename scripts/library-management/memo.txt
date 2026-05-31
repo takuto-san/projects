@@ -1,0 +1,3 @@
+npm create vite@latest react -- --template react-ts
+cd react
+npm run dev
