@@ -260,10 +260,16 @@ class Book(Base):
     isbn = Column(String, unique=True, index=True, nullable=True)
     title = Column(String, nullable=False)
     
+    borrowings = relationship("Borrowing", back_populates="book")
+
+class Item(Base):
+    __tablename__ = "items"
+    id = Column(Integer, primary_key=True, index=True)
+    book_id = Column(Integer, ForeignKey("books.id"), nullable=False)
     total_copies = Column(Integer, default=1, nullable=False)
     available_copies = Column(Integer, default=1, nullable=False)
 
-    borrowings = relationship("Borrowing", back_populates="book")
+    book = relationship("Book", back_populates="items")
 
 class Borrowing(Base):
     __tablename__ = "borrowings"
@@ -272,7 +278,6 @@ class Borrowing(Base):
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     book_id = Column(Integer, ForeignKey("books.id"), nullable=False)
     
-    # 修正：レコードが作成された時に、自動で現在時刻が入るように default を追加
     borrow_date = Column(DateTime, default=datetime.utcnow, nullable=False)
     return_date = Column(DateTime, nullable=True)
 
