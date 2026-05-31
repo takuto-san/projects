@@ -4,3 +4,8 @@ npm run dev
 
 cd fastapi-mvc
 docker start 2f5065c0ea7b
+
+docker stop fastapi-mvc 
+docker rm fastapi-mvc  
+docker build -t fastapi-mvc .
+docker run -d -p 8080:8080 --name fastapi-mvc fastapi-mvc

@@ -1,4 +1,4 @@
-export default function Table({ books = [] }: { books?: string[] }) {
+export default function Table({ items = [] }: { items?: string[] }) {
     return (
         <table border={1}>
             <thead>
@@ -11,7 +11,7 @@ export default function Table({ books = [] }: { books?: string[] }) {
                 {[...Array(10)].map((_, i) => (
                     <tr key={i}>
                         <td>{i + 1}</td>
-                        <td>{books[i] || ""}</td>
+                        <td>{items[i] || ""}</td>
                     </tr>
                 ))}
             </tbody>

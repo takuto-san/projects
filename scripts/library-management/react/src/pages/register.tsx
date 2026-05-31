@@ -3,13 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import Button from '../components/Button';
 import Table from '../components/Table';
 import Form from '../components/Form';
-import { registerBooks } from '../api/booksApi';
+import { registerItems } from '../api/booksApi';
 
 export default function Register() {
   const navigate = useNavigate();
 
   const [input, setInput] = useState('');
-  const [books, setBooks] = useState<string[]>([]);
+  const [items, setItems] = useState<string[]>([]);
   const userId = "test@example.com";
 
   const handleScan = (e: React.SubmitEvent<HTMLFormElement>) => {
@@ -17,18 +17,18 @@ export default function Register() {
     
     if (!input) return;
 
-    setBooks((prev) => [...prev, input]);
+    setItems((prev) => [...prev, input]);
     setInput('');
   };
 
-  const handleSendBooks = async () => {
-    if (books.length === 0) return alert("No books to register");
+  const handleSendItems = async () => {
+    if (items.length === 0) return alert("No items to register");
 
     try {
-      await registerBooks(userId, books);
-      navigate('/completed');
+      const result = await registerItems(userId, items);
+      navigate('/completed', { state: { borrowings: result } });
     } catch (error) {
-      alert("Failed to register books");
+      alert("Failed to register items");
       console.error(error);
     }
   }
@@ -38,7 +38,7 @@ export default function Register() {
       <h1>図書マスター</h1>
       <Button text="戻る" size="small" type="button" onClick={() => navigate('/dashboard')} />
       <br />
-      <Table books={books} />
+      <Table items={items} />
       <br/>
       <Form onSubmit={handleScan}>
         <input
@@ -52,7 +52,7 @@ export default function Register() {
         text="送信" 
         size="small" 
         type="button" 
-        onClick={handleSendBooks} 
+        onClick={handleSendItems} 
       />
     </div>
   );
