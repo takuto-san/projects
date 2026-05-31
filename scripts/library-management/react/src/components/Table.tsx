@@ -1,21 +1,19 @@
-export default function Table() {
+export default function Table({ books = [] }: { books?: string[] }) {
     return (
-        <table>
+        <table border={1}>
             <thead>
                 <tr>
-                    <th></th>
+                    <th>no.</th>
                     <th>ID</th>
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td>1</td>
-                    <td>1234567890</td>
-                </tr>
-                <tr>
-                    <td>2</td>
-                    <td>0987654321</td>
-                </tr>
+                {[...Array(10)].map((_, i) => (
+                    <tr key={i}>
+                        <td>{i + 1}</td>
+                        <td>{books[i] || ""}</td>
+                    </tr>
+                ))}
             </tbody>
         </table>
     );
