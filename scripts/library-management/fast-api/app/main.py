@@ -1,9 +1,10 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends
 from pydantic import BaseModel
 from typing import List, Optional
 from fastapi.middleware.cors import CORSMiddleware
-# from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Session
-# from sqlalchemy.orm import relationship, declarative_base
+from sqlalchemy import create_engine,Column, Integer, String, ForeignKey, DateTime
+from sqlalchemy.orm import relationship, declarative_base, sessionmaker, Session
+from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime
 
 app = FastAPI()
@@ -206,42 +207,58 @@ def create_borrowing(user_id: str, request: BorrowingRequest):
 #     return db.query(Borrowing).filter(Borrowing.user_id == user_id).all()
 
 
-# """""""""""""""
-#      model
-# """""""""""""""
-# # model（DB）
-# Base = declarative_base()
+SQLALCHEMY_DATABASE_URL = "sqlite:///./local.db"
 
-# class User(Base):
-#     __tablename__ = "users"
+engine = create_engine(
+    # SQLite特有の設定：複数のスレッドからアクセスできるようにする
+    SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
+)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-#     id = Column(Integer, primary_key=True, index=True)
-#     name = Column(String, nullable=False)
+# APIがデータベースを利用するための「クッション」となる関数
+def get_db():
+    db = SessionLocal()
+    try: 
+        yield db
+    finally:
+        db.close()
+        
+"""""""""""""""
+     model
+"""""""""""""""
+# model（DB）
+Base = declarative_base()
+
+class User(Base):
+    __tablename__ = "users"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, nullable=False)
     
-#     borrowings = relationship("Borrowing", back_populates="user")
+    borrowings = relationship("Borrowing", back_populates="user")
 
-# class Book(Base):
-#     __tablename__ = "books"
+class Book(Base):
+    __tablename__ = "books"
 
-#     id = Column(Integer, primary_key=True, index=True)
-#     isbn = Column(String, unique=True, index=True, nullable=True)
-#     title = Column(String, nullable=False)
+    id = Column(Integer, primary_key=True, index=True)
+    isbn = Column(String, unique=True, index=True, nullable=True)
+    title = Column(String, nullable=False)
     
-#     total_copies = Column(Integer, default=1, nullable=False)
-#     available_copies = Column(Integer, default=1, nullable=False)
+    total_copies = Column(Integer, default=1, nullable=False)
+    available_copies = Column(Integer, default=1, nullable=False)
 
-#     borrowings = relationship("Borrowing", back_populates="book")
+    borrowings = relationship("Borrowing", back_populates="book")
 
-# class Borrowing(Base):
-#     __tablename__ = "borrowings"
+class Borrowing(Base):
+    __tablename__ = "borrowings"
 
-#     id = Column(Integer, primary_key=True, index=True)
-#     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-#     book_id = Column(Integer, ForeignKey("books.id"), nullable=False)
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    book_id = Column(Integer, ForeignKey("books.id"), nullable=False)
     
-#     # 修正：レコードが作成された時に、自動で現在時刻が入るように default を追加
-#     borrow_date = Column(DateTime, default=datetime.utcnow, nullable=False)
-#     return_date = Column(DateTime, nullable=True)
+    # 修正：レコードが作成された時に、自動で現在時刻が入るように default を追加
+    borrow_date = Column(DateTime, default=datetime.utcnow, nullable=False)
+    return_date = Column(DateTime, nullable=True)
 
-#     user = relationship("User", back_populates="borrowings")
-#     book = relationship("Book", back_populates="borrowings")
+    user = relationship("User", back_populates="borrowings")
+    book = relationship("Book", back_populates="borrowings")
